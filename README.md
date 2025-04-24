@@ -1,4 +1,4 @@
-#### 
+# Munzambi Miguel
 
 ### **O projeto tem como objetivo facilitar o uso do Docker com Laravel para iniciantes que desejam configurar um ambiente de desenvolvimento.**
 
@@ -12,7 +12,6 @@ Com esse projeto, os usuários podem facilmente:
 
 O projeto foi desenvolvido para ser simples de usar e ideal para desenvolvedores que estão começando com Docker e Laravel. A ideia é proporcionar um ambiente de desenvolvimento rápido e eficiente, sem a necessidade de uma infraestrutura complicada.
 
-
 > ````
 > docker-compose up --build -d
 > ````
@@ -22,24 +21,46 @@ O projeto foi desenvolvido para ser simples de usar e ideal para desenvolvedores
 > Para criar uma novo projecto laravel, basta escrever
 >
 > ```
-> .\win.ps1 laravel new
+> .\bantu laravel new
 > ```
 >
 > Ou Escreva usando o composer
 >
 > ````
-> .\win.ps1 composer create-project
+> .\bantu composer create-project
 > ````
 >
 > quasquer comando artisan do laravel podes usar o comando o win.ps1 pa, faz a vez do php artisan na pasta do projecto que será app
 >
 > ```
-> .\win.ps1 pa list
+> .\bantu pa list
 > ```
 >
 > para ambiente dist linux, ubuntu ou derbian, pode ser usado o lin, em vez de win
 >
 > ```
 >
-> ./lin.sh composer create-project
+> ./bantu composer create-project
 > ```
+
+**Para usuários do WSL (Windows Subsystem for Linux), como Ubuntu ou Debian:**
+
+Se você deseja acessar arquivos do sistema de arquivos do Windows a partir do terminal WSL, pode montar a unidade do Windows manualmente utilizando o seguinte comando:
+
+```bash
+sudo mount -t drvfs C: /mnt/c
+```
+
+Esse comando monta a unidade `C:` do Windows no caminho `/mnt/c`, permitindo que você acesse arquivos e pastas como se estivesse em um ambiente Linux padrão.
+
+> 💡 Observação: Em versões mais recentes do WSL, os discos do Windows geralmente já são montados automaticamente em `/mnt`, como `/mnt/c`, `/mnt/d`, etc. No entanto, esse comando pode ser útil caso a montagem automática não ocorra ou tenha sido desativada.
+
+---
+
+Se quiser posso incluir também o uso em scripts ou alias para facilitar a vida no terminal. Deseja?
+
+````
+ cd /mnt/c/Users/<username>/Documents/GitHub/Local/docker/projecto0.1.1
+ docker-compose --env-file ./containers/Env/.env up --build -d
+ docker-compose restart nginx
+````

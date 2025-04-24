@@ -4,14 +4,14 @@ services:
   app:
     build:
       context: .  # Mudando o contexto para a raiz do projeto
-      dockerfile: ./containers/php-min/Dockerfile
+      dockerfile: ./containers/php/Dockerfile
     container_name: laravel-app
     working_dir: /var/www/html
     mem_limit: 8G
     mem_reservation: 6G
     volumes:
       - .:/var/www/html/:delegated
-      - ./containers/php-min/php.ini:/usr/local/etc/php/php.ini
+      - ./containers/php/php.ini:/usr/local/etc/php/php.ini
     environment:
       - COMPOSER_ALLOW_SUPERUSER=1
     depends_on:
@@ -55,6 +55,8 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     container_name: phpmyadmin
+    mem_limit: 4G
+    mem_reservation: 4G
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306

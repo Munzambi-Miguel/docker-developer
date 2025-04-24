@@ -1,2 +1,4 @@
 containers/mysql/mysql.sock
 /containers/mysql/mysql.sock
+/containers/mysql/volume/mysql.sock
+containers/mysql/volume/mysql.sock
