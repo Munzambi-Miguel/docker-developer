@@ -1,7 +1,12 @@
 # Munzambi Miguel
 
 
-| Suporte ao windows 11 : Windows terminal                                                                  | Suporte ubuntu 22 e 24 ou a dist baseado em derbian                                                                   |
+| Suporte ao windows 11 : Windows terminal | Suporte ubuntu 22 e 24 ou a dist baseado em derbian |
+| ---------------------------------------- | --------------------------------------------------- |
+|                                          |                                                     |
+
+
+| Suporte ao windows 11                                                                                     |                                                                                                                       |
 | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | ![Windows 10 icon in Windows 11 Color Style](https://img.icons8.com/?size=180&id=gXoJoyTtYXFg&format=png) | ![Ubuntu Logo PNG Vector SVG, EPS, Ai formats (3.08 KB) Free Download](https://www.cdnlogo.com/logos/u/42/ubuntu.svg) |
 
