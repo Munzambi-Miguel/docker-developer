@@ -1,5 +1,10 @@
 # Munzambi Miguel
 
+
+| Suporte ao windows 11 : Windows terminal                                                                  | Suporte ubuntu 22 e 24 ou a dist baseado em derbian                                                                   |
+| --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| ![Windows 10 icon in Windows 11 Color Style](https://img.icons8.com/?size=180&id=gXoJoyTtYXFg&format=png) | ![Ubuntu Logo PNG Vector SVG, EPS, Ai formats (3.08 KB) Free Download](https://www.cdnlogo.com/logos/u/42/ubuntu.svg) |
+
 ### **O projeto tem como objetivo facilitar o uso do Docker com Laravel para iniciantes que desejam configurar um ambiente de desenvolvimento.**
 
 A ideia é proporcionar uma maneira simples e prática de configurar o Docker e o Laravel em uma máquina local, permitindo que desenvolvedores iniciantes possam concentrar-se no desenvolvimento de suas aplicações sem se preocupar com configurações complexas de ambiente.
