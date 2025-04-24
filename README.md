@@ -64,3 +64,9 @@ Se quiser posso incluir também o uso em scripts ou alias para facilitar a vida 
  docker-compose --env-file ./containers/Env/.env up --build -d
  docker-compose restart nginx
 ````
+
+````
+.\bantu  # para ober o menu interrativo no ambiente windows ou linux
+````
+
+![1745537426803](images/README/1745537426803.png)

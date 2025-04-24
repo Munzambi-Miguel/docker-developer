@@ -4,86 +4,166 @@
 ContainerName="laravel-app"
 
 # Junta todos os argumentos em uma string
-Arguments="$*"
+Arguments="$@"
 
-if [ -z "$Arguments" ]; then
-    echo "Uso: ./lin.sh <comando>"
-    echo "Exemplo: ./lin.sh artisan migrate"
-    echo "         ./lin.sh php -v"
-    echo "         ./lin.sh pa migrate"
-    exit 1
-fi
+# Função para mostrar o progresso no estilo Docker
+function Show-DockerStyleProgress {
+    local TaskName=$1
+    local Step=$2
+    local TotalSteps=$3
+    local progressBarLength=40
+    local currentIndex=$((Step * progressBarLength / TotalSteps))
+    local bar=""
 
-echo ""
-echo ""
-echo -e "\033[1;33m[ $* ] Executando...\033[0m"
-echo -e "\033[1;32m:::::::::::::::::::::::::::::::\033[0m"
-echo ""
-echo ""
+    for ((i=0; i<progressBarLength; i++)); do
+        if ((i < currentIndex)); then
+            bar+="⣿"
+        elif ((i == currentIndex)); then
+            bar+="⣷"
+        else
+            bar+=" "
+        fi
+    done
 
-# Verifica se o container está em execução
-is_container_running() {
-    docker inspect -f '{{.State.Running}}' "$ContainerName" 2>/dev/null | grep -q true
+    local percentage=$((Step * 100 / TotalSteps))
+    printf "%s [%s] %d MB / %d MB (%d%%)\r" "$TaskName" "$bar" "$Step" "$TotalSteps" "$percentage"
 }
 
-if ! is_container_running; then
+# Função para mostrar a barra de progresso
+function Show-ProgressBar {
+    local TaskName=$1
+    local CurrentSize=$2
+    local TotalSize=$3
+    local progress=$((CurrentSize * 100 / TotalSize))
+    local progressBarLength=20
+    local progressBar
+    local filled=$((progress * progressBarLength / 100))
+    local empty=$((progressBarLength - filled))
+
+    progressBar=$(printf "⣷%.0s" $(seq 1 $filled))
+    progressBar+=$(printf " %.0s" $(seq 1 $empty))
+
+    printf "%s [%s] %.2fMB / %.2fMB %d%%\r" "$TaskName" "$progressBar" "$CurrentSize" "$TotalSize" "$progress"
+}
+
+# Função para mostrar o menu interativo
+function Show-InteractiveMenu {
+    local options=("$@")
+    local selected=0
+    local key
+    local prompt="Selecione uma opção:"
+
+    while true; do
+        clear
+        echo "$prompt"
+        echo "Use ↑ ↓ e Enter para selecionar:"
+
+        for i in "${!options[@]}"; do
+            if ((i == selected)); then
+                echo -e "🟢 ${options[$i]}"
+            else
+                echo -e "🔘 ${options[$i]}"
+            fi
+        done
+
+        read -rsn1 key
+        case $key in
+            $'\x1b[A') ((selected > 0)) && ((selected--)) ;; # UP
+            $'\x1b[B') ((selected < ${#options[@]} - 1)) && ((selected++)) ;; # DOWN
+            $'\x0a') echo "${options[$selected]}" && break ;; # ENTER
+        esac
+    done
+}
+
+if [[ -z "$Arguments" ]]; then
+    options=(
+        "php -v"
+        "php artisan migrate"
+        "php artisan config:clear"
+        "php artisan db:seed"
+        "composer install"
+        "composer dump-autoload"
+        "composer create-project laravel/laravel"
+        "chmod -R 777 app"
+        "laravel -v"
+        "laravel new "
+        "Sair"
+    )
+
+    selection=$(Show-InteractiveMenu "${options[@]}")
+
+    if [[ "$selection" == "Sair" ]]; then
+        echo "Saindo..."
+        exit 0
+    fi
+
+    Arguments=($selection)
+fi
+
+echo ""
+echo "[ $Arguments ] Executando..."
+# Simulando o progresso de download ou execução do comando
+TotalSize=100
+Increment=10
+
+for ((i=0; i<=TotalSize; i+=Increment)); do
+    Show-DockerStyleProgress "$(date '+%Y-%m-%d %H:%M:%S')" "$i" "$TotalSize"
+    sleep 0.5
+done
+
+echo ""
+echo ""
+
+# Função para verificar se o container está em execução
+function Test-ContainerRunning {
+    containerStatus=$(docker inspect -f '{{.State.Running}}' "$ContainerName" 2>/dev/null)
+    [[ "$containerStatus" == "true" ]]
+}
+
+# Se o container não estiver rodando, inicie-o
+if ! Test-ContainerRunning; then
     echo "Container '$ContainerName' não está em execução. Iniciando..."
     docker-compose up -d
-    sleep 5
+    sleep 5 # Espera 5 segundos para garantir que o container tenha tempo para iniciar
 fi
 
-if [ "$1" == "composer" ] && [ "$2" == "create-project" ]; then
-    # Ex: composer create-project laravel/laravel . => composer create-project laravel/laravel app
+# Força sempre a criação na pasta 'app'
+if [[ "${Arguments[0]}" == "composer" && "${Arguments[1]}" == "create-project" ]]; then
     ComposerCommand="composer create-project laravel/laravel app"
-    docker exec -it $ContainerName bash -c "$ComposerCommand"
+    TotalSize=257.8  # Total em MB (exemplo)
+    CurrentSize=0
+
+    while (( $(echo "$CurrentSize < $TotalSize" | bc -l) )); do
+        Show-ProgressBar "Pulling" "$CurrentSize" "$TotalSize"
+        CurrentSize=$(echo "$CurrentSize + 5" | bc)  # Incrementa 5MB a cada iteração
+        sleep 1
+    done
+    docker exec -it "$ContainerName" bash -c "$ComposerCommand"
 
     # Adiciona permissão 777 para a pasta 'app'
-    docker exec -it $ContainerName bash -c "chmod -R 777 /var/www/html/app"
+    docker exec -it "$ContainerName" bash -c "chmod -R 777 /var/www/html/app"
+fi
 
-elif [ "$1" == "laravel" ] && [ "$2" == "new" ]; then
-    # Ex: laravel new qualquercoisa => laravel new app
+elif [[ "${Arguments[0]}" == "laravel" && "${Arguments[1]}" == "new" ]]; then
     LaravelCommand="laravel new app"
-    docker exec -it $ContainerName bash -c "$LaravelCommand"
+    docker exec -it "$ContainerName" bash -c "$LaravelCommand"
 
     # Adiciona permissão 777 para a pasta 'app'
-    docker exec -it $ContainerName bash -c "chmod -R 777 /var/www/html/app"
-
-elif [ "$1" == "app-permission" ]; then
-    if [ -z "$2" ]; then
-        # Caso o nome da pasta não seja fornecido, usa 'app' por padrão
-        docker exec -it $ContainerName bash -c "chmod -R 777 /var/www/html/app"
-        echo "Permissões 777 atribuídas à pasta 'app'."
-    else
-        # Caso um nome de pasta seja fornecido
-        folderName="$2"
-        docker exec -it $ContainerName bash -c "chmod -R 777 /var/www/html/$folderName"
-        echo "Permissões 777 atribuídas à pasta '$folderName'."
-    fi
-fi
-
-# Lógica para 'pa'
-if [ "$1" = "pa" ]; then
-    shift
-    if [ $# -eq 0 ]; then
-        # Modo interativo na pasta app e executa php artisan
-        docker exec -it "$ContainerName" bash -c "cd /var/www/html/app  && php artisan"
-    else
-        # Executa php artisan com argumentos e sai
-        ArtisanCommand="$*"
-        docker exec "$ContainerName" bash -c "cd /var/www/html/app && php artisan $ArtisanCommand"
-    fi
-elif [ "$1" = "artisan" ]; then
-    shift
-    ArtisanCommand="$*"
-    docker exec "$ContainerName" bash -c "php artisan $ArtisanCommand"
+    docker exec -it "$ContainerName" bash -c "chmod -R 777 /var/www/html/app"
+elif [[ "${Arguments[0]}" == "app-permission" ]]; then
+    docker exec -it "$ContainerName" bash -c "chmod -R 777 /var/www/html/app"
+    echo "Permissões 777 atribuídas à pasta 'app'."
+elif [[ "${Arguments[0]}" == "pa" ]]; then
+    ArtisanCommand="${Arguments[@]:1}"
+    docker exec -it "$ContainerName" bash -c "cd /var/www/html/app && php artisan $ArtisanCommand"
+elif [[ "${Arguments[0]}" == "artisan" ]]; then
+    ArtisanCommand="${Arguments[@]:1}"
+    docker exec -it "$ContainerName" bash -c "php artisan $ArtisanCommand"
 else
-    docker exec "$ContainerName" bash -c "$Arguments"
+    docker exec -it "$ContainerName" bash -c "$Arguments"
 fi
 
-# Só exibe mensagem final se foi execução direta
-if [ "$#" -gt 0 ] && [ "$1" != "pa" -o "$#" -gt 1 ]; then
-    echo ""
-    echo ""
-    echo -e "\033[1;33m[ $Arguments : $(date '+%Y-%m-%d %H:%M:%S') ] concluído...\033[0m"
-    echo -e "\033[1;32m:::::::::::::::::::::::::::::::\033[0m"
-fi
+echo ""
+echo ""
+echo "[ $Arguments ] concluído..."
+echo "$(date '+%Y-%m-%d %H:%M:%S') [⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿]" 
