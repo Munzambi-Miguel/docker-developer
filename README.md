@@ -83,7 +83,7 @@ Se quiser posso incluir também o uso em scripts ou alias para facilitar a vida 
 ````
  cd /mnt/c/Users/<username>/Documents/GitHub/Local/docker/projecto0.1.1
  docker-compose --env-file ./containers/Env/.env up --build -d
- docker-compose restart nginx # information
+ docker-compose restart nginx # information 2025
 ````
 
 ````
