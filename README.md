@@ -1,4 +1,4 @@
-# Munzambi Miguel
+# Munzambi Ntemo Miguel
 
 
 | Windows_11_Windows:terminal___________                                                                    | Suporte ubuntu 22 e 24 ou a dist baseado em derbian                                                                   |
