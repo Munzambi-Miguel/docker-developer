@@ -45,7 +45,7 @@ function Show-ProgressBar {
 
     $progress = [math]::Floor(($CurrentSize / $TotalSize) * 100)
     $progressBarLength = 20  # Comprimento total da barra de progresso
-    $progressBar = '⣷' * [math]::Floor(($progress / 100) * $progressBarLength) + ' ' * ($progressBarLength - [math]::Floor(($progress / 100) * $progressBarLength))
+    $progressBar = '⣿' * [math]::Floor(($progress / 100) * $progressBarLength) + ' ' * ($progressBarLength - [math]::Floor(($progress / 100) * $progressBarLength))
     
     # Exibindo a barra de progresso
     Write-Host -NoNewline "$TaskName [$progressBar] $([math]::Round($CurrentSize, 2))MB / $([math]::Round($TotalSize, 2))MB $progress%`r"
