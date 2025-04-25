@@ -20,9 +20,13 @@ jobs:
           sudo curl -SL https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-      - name: Build da imagem com docker-compose
+      - name: Build Docker image
         run: |
-          docker-compose up -d --build
+          docker build -t lab-laravel:latest ./containers/php
+
+      - name: Build services
+        run: |
+          docker-compose build
 
       - name: Tag da imagem
         run: |
