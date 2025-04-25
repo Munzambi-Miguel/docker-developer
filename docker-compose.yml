@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .  # Mudando o contexto para a raiz do projeto
-      dockerfile: ./containers/php/Dockerfile
+    image: ntemomiguel/lab-laravel:latest  # Use a imagem do Docker Hub
     container_name: laravel-app
     working_dir: /var/www/html
     mem_limit: 8G
