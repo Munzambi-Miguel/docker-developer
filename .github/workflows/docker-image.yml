@@ -5,45 +5,96 @@ on:
     branches:
       - main
 
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/lab-laravel
+
 jobs:
   validation:
-    name: validation
+    name: validation # Este nome precisa bater com o check exigido
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
 
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Logar no Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Instalar docker-compose
-        run: |
-          sudo curl -SL https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-
-      - name: Instalar JQ (para ler composer.json)
+      - name: Instalar JQ
         run: sudo apt-get install -y jq
 
       - name: Obter versão do composer.json
         id: get_version
         run: |
           VERSION=$(jq -r '.version' composer.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Versão detectada: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Build Docker image
+      - name: Confirmação de validação concluída
+        run: echo "Validação OK"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: validation
+    outputs:
+      image_cache_key: ${{ steps.cache_key.outputs.key }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Definir chave de cache
+        id: cache_key
+        run: echo "key=docker-image-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Instalar docker-compose
         run: |
+          sudo curl -SL https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Build da imagem Docker
+        run: |
+          VERSION=${{ needs.validation.outputs.version }}
           docker build -t lab-laravel:latest ./containers/php
+          docker tag lab-laravel:latest ${{ env.IMAGE_NAME }}:$VERSION
+          docker tag lab-laravel:latest ${{ env.IMAGE_NAME }}:latest
 
-      - name: Criar tags da imagem
+      - name: Exportar imagem Docker para cache
+        id: export_image
         run: |
-          IMAGE=${{ secrets.DOCKER_USERNAME }}/lab-laravel
-          docker tag lab-laravel:latest $IMAGE:$VERSION
-          docker tag lab-laravel:latest $IMAGE:latest
+          VERSION=${{ needs.validation.outputs.version }}
+          mkdir -p image-cache
+          docker save -o image-cache/lab-laravel.tar \
+            ${{ env.IMAGE_NAME }}:$VERSION \
+            ${{ env.IMAGE_NAME }}:latest
 
-      - name: Push da imagem
+      - name: Cache da imagem Docker
+        uses: actions/cache@v3
+        with:
+          path: image-cache
+          key: docker-image-${{ github.sha }}
+
+  push:
+    runs-on: ubuntu-latest
+    needs: [build, validation]
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Restaurar imagem Docker do cache
+        uses: actions/cache@v3
+        with:
+          path: image-cache
+          key: docker-image-${{ github.sha }}
+
+      - name: Load da imagem Docker
         run: |
-          IMAGE=${{ secrets.DOCKER_USERNAME }}/lab-laravel
-          docker push $IMAGE:$VERSION
-          docker push $IMAGE:latest
+          docker load -i image-cache/lab-laravel.tar
+
+      - name: Logar no Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Push da imagem Docker
+        run: |
+          VERSION=${{ needs.validation.outputs.version }}
+          docker push ${{ env.IMAGE_NAME }}:$VERSION
+          docker push ${{ env.IMAGE_NAME }}:latest
