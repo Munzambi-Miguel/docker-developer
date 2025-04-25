@@ -6,6 +6,7 @@ ENV COMPOSER_HOME="/root/.config/composer" \
     PATH="/root/.config/composer/vendor/bin:$PATH" \
     TZ="UTC"
 
+sfafdsfaaf
 # Instala dependências básicas + PHP extensions
 RUN apk add --no-cache \
     bash curl git unzip \
