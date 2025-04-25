@@ -3,6 +3,8 @@ name: Build and Push Docker Image
 on:
   push:
     branches: [main]
+    tags:
+      - "v*" # Detecta push de tags tipo v1.0.0, v2.1.3 etc
 
 jobs:
   docker:
@@ -15,23 +17,27 @@ jobs:
       - name: Logar no Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Install docker-compose
+      - name: Instalar docker-compose
         run: |
           sudo curl -SL https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-      - name: Build Docker image
+      - name: Build da imagem
         run: |
-          docker build -t lab-laravel:latest ./containers/php
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/lab-laravel:latest ./containers/php
 
-      - name: Build services
+      - name: Tag de versão (se push de tag)
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
-          docker-compose build
+          VERSION=${GITHUB_REF#refs/tags/}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/lab-laravel:latest ${{ secrets.DOCKER_USERNAME }}/lab-laravel:$VERSION
 
-      - name: Tag da imagem
-        run: |
-          docker tag lab-laravel ${{ secrets.DOCKER_USERNAME }}/lab-laravel:latest
-
-      - name: Push da imagem
+      - name: Push da imagem latest
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/lab-laravel:latest
+
+      - name: Push da imagem com tag de versão (se existir)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          docker push ${{ secrets.DOCKER_USERNAME }}/lab-laravel:$VERSION
