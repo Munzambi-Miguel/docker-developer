@@ -6,6 +6,7 @@ on:
 
 jobs:
   validation:
+    name: validation
     runs-on: ubuntu-latest
 
     steps:

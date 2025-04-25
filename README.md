@@ -13,7 +13,6 @@ Com esse projeto, os usuários podem facilmente:
 O projeto foi desenvolvido para ser simples de usar e ideal para desenvolvedores que estão começando com Docker e Laravel. A ideia é proporcionar um ambiente de desenvolvimento rápido e eficiente, sem a necessidade de uma infraestrutura complicada.
 
 
-
 | Windows_11_Windows:terminal___________                                                                    | Suporte ubuntu 22 e 24 ou a dist baseado em derbian                                                                   |
 | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | ![Windows 10 icon in Windows 11 Color Style](https://img.icons8.com/?size=180&id=gXoJoyTtYXFg&format=png) | ![Ubuntu Logo PNG Vector SVG, EPS, Ai formats (3.08 KB) Free Download](https://www.cdnlogo.com/logos/u/42/ubuntu.svg) |
@@ -33,7 +32,6 @@ O projeto foi desenvolvido para ser simples de usar e ideal para desenvolvedores
 | **phpmyadmin** | -**Imagem**:`phpmyadmin/phpmyadmin:latest`<br/>-**Container Name**:`phpmyadmin`<br/>-**Memória Limite**: 4G<br/>-**Memória Reservada**: 4G                                                                                                |
 |                | -**Ambiente**:`PMA_HOST: mysql`,`PMA_PORT: 3306`<br/>-**Portas**:`"8081:80"`<br/>-**Dependências**:`mysql`<br/>-**Redes**:`app-network`                                                                                                    |
 | **redes**      | -**app-network**:`driver: bridge`                                                                                                                                                                                                           |
-
 
 > ````
 > docker-compose up --build -d
@@ -85,7 +83,7 @@ Se quiser posso incluir também o uso em scripts ou alias para facilitar a vida 
 ````
  cd /mnt/c/Users/<username>/Documents/GitHub/Local/docker/projecto0.1.1
  docker-compose --env-file ./containers/Env/.env up --build -d
- docker-compose restart nginx
+ docker-compose restart nginx # information 2025
 ````
 
 ````
