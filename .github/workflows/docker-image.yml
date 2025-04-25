@@ -1,0 +1,28 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v3
+
+    - name: Logar no Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build da imagem PHP com docker-compose
+      run: |
+        docker-compose -f docker-compose.yml build php
+
+    - name: Tag da imagem
+      run: |
+        docker tag lab-laravel ${{ secrets.DOCKER_USERNAME }}/lab-laravel:latest
+
+    - name: Push da imagem
+      run: |
+        docker push ${{ secrets.DOCKER_USERNAME }}/lab-laravel:latest
